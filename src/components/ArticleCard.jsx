@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import './ArticleCard.css'
 
+const STRAPI_URL = 'http://localhost:1337'
+
 // Assign each article a grid pattern for an editorial feel
 const LAYOUTS = [
   { cols: 7, featured: true },   // wide + featured
@@ -21,9 +23,27 @@ function formatDate(iso) {
   })
 }
 
+function getThumbnailUrl(article) {
+  const imageField = article.cover || article.image || article.thumbnail
+  
+  if (!imageField) return null
+  
+  const imageData = imageField.data ? imageField.data : imageField
+  const formats = Array.isArray(imageData) ? imageData[0]?.attributes?.formats : imageData?.attributes?.formats
+  const url = Array.isArray(imageData) ? imageData[0]?.attributes?.url : imageData?.attributes?.url
+  
+  if (!formats && !url) return null
+  
+  // Prefer thumbnail or small format for cards
+  const imageUrl = formats?.thumbnail?.url || formats?.small?.url || formats?.medium?.url || url
+  
+  return imageUrl ? `${STRAPI_URL}${imageUrl}` : null
+}
+
 export default function ArticleCard({ article, index, onClick }) {
   const [hovered, setHovered] = useState(false)
   const layout = LAYOUTS[index % LAYOUTS.length]
+  const thumbnailUrl = getThumbnailUrl(article)
 
   return (
     <article
@@ -42,6 +62,12 @@ export default function ArticleCard({ article, index, onClick }) {
         </div>
 
         <div className="card-body">
+          {thumbnailUrl && (
+            <div className="card-thumbnail">
+              <img src={thumbnailUrl} alt={article.title} />
+            </div>
+          )}
+          
           <h2 className="card-title">{article.title}</h2>
           {article.description && (
             <p className="card-description">{article.description}</p>

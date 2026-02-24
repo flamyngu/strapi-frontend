@@ -128,6 +128,40 @@
   letter-spacing: 0.05em;
 }
 
+/* ── Image ────────────────────────────────────────────── */
+
+.detail-image-wrapper {
+  width: 100%;
+  margin-bottom: 2.5rem;
+  border: 3px solid var(--ink);
+  overflow: hidden;
+  position: relative;
+  animation: imageReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+@keyframes imageReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.detail-image:hover {
+  transform: scale(1.02);
+}
+
 /* ── Body ─────────────────────────────────────────────── */
 
 .detail-body {
@@ -151,10 +185,110 @@
   font-size: 1rem;
   line-height: 1.8;
   color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
-.detail-content p {
-  margin-bottom: 1.25rem;
+/* Rich Text Block */
+.content-richtext {
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.content-richtext h1,
+.content-richtext h2,
+.content-richtext h3 {
+  font-family: var(--serif);
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--ink);
+}
+
+.content-richtext h2 {
+  font-size: 1.75rem;
+  line-height: 1.3;
+}
+
+.content-richtext h3 {
+  font-size: 1.35rem;
+  line-height: 1.4;
+}
+
+.content-richtext p {
+  margin-bottom: 1rem;
+}
+
+.content-richtext ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.content-richtext li {
+  margin-bottom: 0.5rem;
+}
+
+.content-richtext a {
+  color: var(--accent);
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.content-richtext a:hover {
+  color: var(--accent-muted);
+}
+
+.content-richtext strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.content-richtext em {
+  font-style: italic;
+}
+
+/* Quote Block */
+.content-quote {
+  background: var(--paper-dark);
+  border-left: 4px solid var(--gold);
+  padding: 2rem 2.5rem;
+  margin: 2rem 0;
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+.quote-body {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: var(--ink);
+}
+
+.quote-author {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-style: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Media/Slider Placeholders */
+.content-media,
+.content-slider {
+  background: var(--paper-dark);
+  border: 2px dashed var(--border);
+  padding: 2rem;
+  text-align: center;
+}
+
+.media-placeholder,
+.slider-placeholder {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
 }
 
 .detail-placeholder {

@@ -18,7 +18,8 @@ export default function App() {
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch(`${STRAPI_URL}/api/articles`)
+        // Populate 'cover' image field (adjust field name if different in your Strapi)
+        const res = await fetch(`${STRAPI_URL}/api/articles?populate=*`)
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
         const json = await res.json()
         setArticles(json.data || [])
