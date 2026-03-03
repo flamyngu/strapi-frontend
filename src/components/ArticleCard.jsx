@@ -24,19 +24,17 @@ function formatDate(iso) {
 }
 
 function getThumbnailUrl(article) {
+  // Strapi v5: flat structure, no data/attributes wrapper
   const imageField = article.cover || article.image || article.thumbnail
-  
   if (!imageField) return null
-  
-  const imageData = imageField.data ? imageField.data : imageField
-  const formats = Array.isArray(imageData) ? imageData[0]?.attributes?.formats : imageData?.attributes?.formats
-  const url = Array.isArray(imageData) ? imageData[0]?.attributes?.url : imageData?.attributes?.url
-  
+
+  const formats = imageField.formats
+  const url = imageField.url
+
   if (!formats && !url) return null
-  
+
   // Prefer thumbnail or small format for cards
   const imageUrl = formats?.thumbnail?.url || formats?.small?.url || formats?.medium?.url || url
-  
   return imageUrl ? `${STRAPI_URL}${imageUrl}` : null
 }
 

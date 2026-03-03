@@ -13,21 +13,17 @@ function formatDate(iso) {
 }
 
 function getImageUrl(article) {
-  // Check multiple possible image field names
+  // Strapi v5: flat structure, no data/attributes wrapper
   const imageField = article.cover || article.image || article.thumbnail
-  
   if (!imageField) return null
-  
-  // Handle both formats: direct object or nested data array
-  const imageData = imageField.data ? imageField.data : imageField
-  const formats = Array.isArray(imageData) ? imageData[0]?.attributes?.formats : imageData?.attributes?.formats
-  const url = Array.isArray(imageData) ? imageData[0]?.attributes?.url : imageData?.attributes?.url
-  
+
+  const formats = imageField.formats
+  const url = imageField.url
+
   if (!formats && !url) return null
-  
+
   // Prefer large format, fallback to medium, small, or original
   const imageUrl = formats?.large?.url || formats?.medium?.url || formats?.small?.url || url
-  
   return imageUrl ? `${STRAPI_URL}${imageUrl}` : null
 }
 
