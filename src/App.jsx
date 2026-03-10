@@ -6,20 +6,32 @@ import './App.css'
 
 const STRAPI_URL = 'http://localhost:1337'
 
+// List query: cover + author + category + pdfs work fine.
+// blocks (Dynamic Zone) causes 500 with populate — loaded separately on detail open.
+const LIST_QUERY =
+  'populate[cover]=true' +
+  '&populate[author]=true' +
+  '&populate[category]=true' +
+  '&populate[pdfs][populate][0]=file'
+
+// Detail query for a single article by documentId — loads blocks separately
+const detailQuery = (documentId) =>
+  `${STRAPI_URL}/api/articles/${documentId}?populate[blocks][populate][0]=file&populate[pdfs][populate][0]=file&populate[cover]=true&populate[author]=true&populate[category]=true`
+
 export default function App() {
   const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [meta, setMeta] = useState(null)
   const [selectedArticle, setSelectedArticle] = useState(null)
+  const [detailLoading, setDetailLoading] = useState(false)
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         setLoading(true)
         setError(null)
-        // Populate 'cover' image field (adjust field name if different in your Strapi)
-        const res = await fetch(`${STRAPI_URL}/api/articles?populate=*`)
+        const res = await fetch(`${STRAPI_URL}/api/articles?${LIST_QUERY}`)
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
         const json = await res.json()
         setArticles(json.data || [])
@@ -32,6 +44,23 @@ export default function App() {
     }
     fetchArticles()
   }, [])
+
+  const handleArticleClick = async (article) => {
+    // Optimistically show article immediately, then enrich with blocks
+    setSelectedArticle(article)
+    setDetailLoading(true)
+    try {
+      const res = await fetch(detailQuery(article.documentId))
+      if (res.ok) {
+        const json = await res.json()
+        if (json.data) setSelectedArticle(json.data)
+      }
+    } catch (e) {
+      // silently fail — article still shows without blocks
+    } finally {
+      setDetailLoading(false)
+    }
+  }
 
   return (
     <div className="app">
@@ -77,11 +106,11 @@ export default function App() {
 
             <div className="articles-grid">
               {articles.map((article, i) => (
-                <ArticleCard 
-                  key={article.id} 
-                  article={article} 
+                <ArticleCard
+                  key={article.id}
+                  article={article}
                   index={i}
-                  onClick={() => setSelectedArticle(article)}
+                  onClick={() => handleArticleClick(article)}
                 />
               ))}
             </div>
@@ -90,8 +119,9 @@ export default function App() {
       </main>
 
       {selectedArticle && (
-        <ArticleDetail 
+        <ArticleDetail
           article={selectedArticle}
+          loading={detailLoading}
           onClose={() => setSelectedArticle(null)}
         />
       )}
