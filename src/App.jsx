@@ -6,17 +6,29 @@ import './App.css'
 
 const STRAPI_URL = 'http://localhost:1337'
 
-// List query: cover + author + category + pdfs work fine.
-// blocks (Dynamic Zone) causes 500 with populate — loaded separately on detail open.
 const LIST_QUERY =
   'populate[cover]=true' +
   '&populate[author]=true' +
   '&populate[category]=true' +
   '&populate[pdfs][populate][0]=file'
 
-// Detail query for a single article by documentId — loads blocks separately
-const detailQuery = (documentId) =>
-  `${STRAPI_URL}/api/articles/${documentId}?populate[blocks][populate][0]=file&populate[pdfs][populate][0]=file&populate[cover]=true&populate[author]=true&populate[category]=true`
+// Strapi 5 Dynamic Zone: "populate[blocks][on][shared.media][populate][0]=file"
+// loads each component type explicitly — avoids the 500 from generic populate
+const detailQuery = (documentId) => {
+  const base = `${STRAPI_URL}/api/articles/${documentId}`
+  const params = [
+    'populate[cover]=true',
+    'populate[author]=true',
+    'populate[category]=true',
+    'populate[pdfs][populate][0]=file',
+    // Dynamic zone: explicit per-component populate
+    'populate[blocks][on][shared.media][populate][0]=file',
+    'populate[blocks][on][shared.quote][populate]=*',
+    'populate[blocks][on][shared.rich-text][populate]=*',
+    'populate[blocks][on][shared.slider][populate]=*',
+  ].join('&')
+  return `${base}?${params}`
+}
 
 export default function App() {
   const [articles, setArticles] = useState([])
@@ -46,7 +58,6 @@ export default function App() {
   }, [])
 
   const handleArticleClick = async (article) => {
-    // Optimistically show article immediately, then enrich with blocks
     setSelectedArticle(article)
     setDetailLoading(true)
     try {
@@ -54,9 +65,13 @@ export default function App() {
       if (res.ok) {
         const json = await res.json()
         if (json.data) setSelectedArticle(json.data)
+      } else {
+        // Log for debugging
+        const err = await res.json()
+        console.warn('Detail fetch failed:', err)
       }
     } catch (e) {
-      // silently fail — article still shows without blocks
+      console.warn('Detail fetch error:', e)
     } finally {
       setDetailLoading(false)
     }
